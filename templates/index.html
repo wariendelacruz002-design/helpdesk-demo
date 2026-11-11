@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Help Desk Demo</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body>
+    <main id="loginScreen" class="login-screen">
+      <form id="loginForm" class="login-card">
+        <div class="login-brand">
+          <div class="login-logo">
+            <img src="/media/logo.png" alt="" />
+          </div>
+        </div>
+
+        <label class="login-field">
+          Usuario
+          <input id="loginUsername" name="username" type="text" autocomplete="username" required />
+        </label>
+        <label class="login-field">
+          Contraseña
+          <input id="loginPassword" name="password" type="password" autocomplete="current-password" required />
+        </label>
+
+        <p id="loginError" class="login-error" role="alert" hidden></p>
+        <button type="submit" class="primary-btn login-submit">Iniciar sesión</button>
+      </form>
+    </main>
+
+    <div id="appShell" class="app-shell" hidden>
+      <aside class="sidebar">
+        <div class="brand brand--compact">
+          <div class="brand-logo">
+            <img src="/media/logo.png" alt="Acabados y Pinturas" />
+          </div>
+        </div>
+
+        <nav class="nav-links">
+          <button class="nav-item active" data-section="dashboard">Dashboard</button>
+          <button class="nav-item" data-section="tickets">Mis tickets</button>
+          <button class="nav-item" data-section="knowledge">Conocimiento</button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button id="logoutButton" class="sidebar-logout" type="button">Cerrar sesión</button>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div>
+            <span class="eyebrow">Sistema de soporte técnico</span>
+            <h2 id="pageTitle">Dashboard</h2>
+          </div>
+          <div class="account-menu">
+            <div class="user-pill" id="userBadge"></div>
+          </div>
+        </header>
+
+        <section id="dashboard" class="view active">
+          <div class="stats-grid">
+            <div class="stat-card primary">
+              <span>Total</span>
+              <strong id="statTotal">0</strong>
+            </div>
+            <div class="stat-card warning">
+              <span>Abiertos</span>
+              <strong id="statOpen">0</strong>
+            </div>
+            <div class="stat-card success">
+              <span>Resueltos</span>
+              <strong id="statResolved">0</strong>
+            </div>
+            <div class="stat-card danger">
+              <span>Urgentes</span>
+              <strong id="statUrgent">0</strong>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Resumen de incidencias</h3>
+            </div>
+            <div id="dashboardTable" class="table-wrap"></div>
+          </div>
+        </section>
+
+        <section id="tickets" class="view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Listado de tickets</h3>
+              <button id="newTicketButton" class="primary-btn small-btn" type="button">Nuevo</button>
+            </div>
+            <div id="ticketsTable" class="table-wrap"></div>
+          </div>
+        </section>
+
+        <section id="knowledge" class="view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Base de conocimiento</h3>
+              <button id="newKnowledgeButton" class="primary-btn small-btn" type="button" hidden>Nueva solución</button>
+            </div>
+            <div id="knowledgeGrid" class="knowledge-grid"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="knowledgeModal" class="modal hidden">
+      <div class="modal-content form-modal-content">
+        <div class="modal-header">
+          <h3>Nueva solución</h3>
+          <button id="closeKnowledgeModal" class="close-btn">×</button>
+        </div>
+
+        <form id="newKnowledgeForm" class="form-panel">
+          <div class="form-grid">
+            <label>
+              Título
+              <input type="text" name="title" required placeholder="Ej. Cambiar la contraseña de acceso" />
+            </label>
+            <label>
+              Categoría
+              <input type="text" name="category" value="Acceso" required />
+            </label>
+          </div>
+          <label>
+            Resumen
+            <textarea name="summary" rows="2" required placeholder="Describa brevemente el problema y la solución general."></textarea>
+          </label>
+          <label>
+            Pasos a seguir
+            <textarea name="steps" rows="6" required placeholder="1. Ingresar al sistema...\n2. Ir a configuración..."></textarea>
+          </label>
+          <label>
+            Etiquetas
+            <input type="text" name="tags" placeholder="contraseña, acceso, seguridad" />
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">Guardar solución</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="ticketModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modalTitle">Detalle del ticket</h3>
+          <button id="closeModal" class="close-btn">×</button>
+        </div>
+
+        <div id="modalBody" class="modal-body"></div>
+      </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+  </body>
+</html>

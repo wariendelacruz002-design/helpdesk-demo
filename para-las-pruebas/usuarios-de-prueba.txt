@@ -1,0 +1,9 @@
+Usuarios de prueba
+
+Administrador
+Usuario: admin
+Contraseña: admin123
+
+Cliente
+Usuario: cliente
+Contraseña: cliente123
