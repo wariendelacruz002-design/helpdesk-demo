@@ -38,9 +38,18 @@
         </div>
 
         <nav class="nav-links">
-          <button class="nav-item active" data-section="dashboard">Dashboard</button>
-          <button class="nav-item" data-section="tickets">Mis tickets</button>
-          <button class="nav-item" data-section="knowledge">Conocimiento</button>
+          <button class="nav-item active" data-section="dashboard">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" /></svg>
+            <span>Dashboard</span>
+          </button>
+          <button class="nav-item" data-section="tickets">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v4a2 2 0 0 0 0 4v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4a2 2 0 0 0 0-4V6a1 1 0 0 1 1-1Z" /><path d="M13 5v2m0 3v2m0 3v2" /></svg>
+            <span>Mis tickets</span>
+          </button>
+          <button class="nav-item" data-section="knowledge">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21z" /><path d="M4 5.5v13A2.5 2.5 0 0 1 6.5 16H20M8 7h8m-8 4h8" /></svg>
+            <span>Soluciones</span>
+          </button>
         </nav>
 
         <div class="sidebar-footer">
@@ -53,9 +62,16 @@
           <div>
             <span class="eyebrow">Sistema de soporte técnico</span>
             <h2 id="pageTitle">Dashboard</h2>
+            <p id="pageDescription" class="page-description">Resumen y actividad reciente del soporte técnico.</p>
           </div>
           <div class="account-menu">
-            <div class="user-pill" id="userBadge"></div>
+            <div class="user-pill" id="userBadge">
+              <span class="user-avatar" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5" /><path d="M5 20a7 7 0 0 1 14 0" /></svg>
+              </span>
+              <span id="userBadgeText"></span>
+              <svg class="user-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>
+            </div>
           </div>
         </header>
 
@@ -73,9 +89,9 @@
               <span>Resueltos</span>
               <strong id="statResolved">0</strong>
             </div>
-            <div class="stat-card danger">
-              <span>Urgentes</span>
-              <strong id="statUrgent">0</strong>
+            <div class="stat-card high">
+              <span>Prioridad alta</span>
+              <strong id="statHigh">0</strong>
             </div>
           </div>
 
@@ -90,8 +106,19 @@
         <section id="tickets" class="view">
           <div class="panel">
             <div class="panel-header">
-              <h3>Listado de tickets</h3>
-              <button id="newTicketButton" class="primary-btn small-btn" type="button">Nuevo</button>
+              <div class="section-title-group">
+                <span class="section-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="m4 8 14-4 3 3-4 13-14-4z" /><circle cx="9" cy="12" r="2" /><path d="m15 10 2 1" /></svg>
+                </span>
+                <div>
+                  <h3>Listado de tickets</h3>
+                  <span id="ticketCount" class="section-subtitle">Total: 0 tickets</span>
+                </div>
+              </div>
+              <button id="newTicketButton" class="primary-btn small-btn" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 8v8m-4-4h8" /></svg>
+                Nuevo ticket
+              </button>
             </div>
             <div id="ticketsTable" class="table-wrap"></div>
           </div>
@@ -100,8 +127,22 @@
         <section id="knowledge" class="view">
           <div class="panel">
             <div class="panel-header">
-              <h3>Base de conocimiento</h3>
-              <button id="newKnowledgeButton" class="primary-btn small-btn" type="button" hidden>Nueva solución</button>
+              <h3>Guías y soluciones</h3>
+              <button id="newKnowledgeButton" class="primary-btn small-btn" type="button" hidden>Publicar guía</button>
+            </div>
+            <p class="knowledge-intro">Instrucciones prácticas para resolver problemas frecuentes de soporte.</p>
+            <div class="knowledge-toolbar">
+              <label class="knowledge-search">
+                Buscar
+                <input id="knowledgeSearch" type="search" placeholder="Ej. acceso, impresora, red" />
+              </label>
+              <label class="knowledge-filter">
+                Categoría
+                <select id="knowledgeCategory">
+                  <option value="">Todas las categorías</option>
+                </select>
+              </label>
+              <span id="knowledgeCount" class="knowledge-count" aria-live="polite"></span>
             </div>
             <div id="knowledgeGrid" class="knowledge-grid"></div>
           </div>
@@ -109,48 +150,48 @@
       </main>
     </div>
 
-    <div id="knowledgeModal" class="modal hidden">
+    <div id="knowledgeModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="knowledgeModalTitle">
       <div class="modal-content form-modal-content">
         <div class="modal-header">
-          <h3>Nueva solución</h3>
-          <button id="closeKnowledgeModal" class="close-btn">×</button>
+          <h3 id="knowledgeModalTitle">Publicar guía</h3>
+          <button id="closeKnowledgeModal" class="close-btn" type="button" aria-label="Cerrar">×</button>
         </div>
 
         <form id="newKnowledgeForm" class="form-panel">
           <div class="form-grid">
             <label>
-              Título
+              Nombre de la guía
               <input type="text" name="title" required placeholder="Ej. Cambiar la contraseña de acceso" />
             </label>
             <label>
               Categoría
-              <input type="text" name="category" value="Acceso" required />
+              <input type="text" name="category" value="Acceso" required placeholder="Ej. Acceso, hardware, red" />
             </label>
           </div>
           <label>
-            Resumen
+            Problema que resuelve
             <textarea name="summary" rows="2" required placeholder="Describa brevemente el problema y la solución general."></textarea>
           </label>
           <label>
-            Pasos a seguir
+            Procedimiento paso a paso
             <textarea name="steps" rows="6" required placeholder="1. Ingresar al sistema...\n2. Ir a configuración..."></textarea>
           </label>
           <label>
-            Etiquetas
+            Palabras clave (separadas por coma)
             <input type="text" name="tags" placeholder="contraseña, acceso, seguridad" />
           </label>
           <div class="form-actions">
-            <button type="submit" class="primary-btn">Guardar solución</button>
+            <button type="submit" class="primary-btn">Publicar guía</button>
           </div>
         </form>
       </div>
     </div>
 
-    <div id="ticketModal" class="modal hidden">
+    <div id="ticketModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-content">
         <div class="modal-header">
           <h3 id="modalTitle">Detalle del ticket</h3>
-          <button id="closeModal" class="close-btn">×</button>
+          <button id="closeModal" class="close-btn" type="button" aria-label="Cerrar">×</button>
         </div>
 
         <div id="modalBody" class="modal-body"></div>

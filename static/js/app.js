@@ -27,28 +27,32 @@ function applyRoleContext() {
   const ticketsHeader = document.querySelector('#tickets .panel-header h3');
   const knowledgeHeader = document.querySelector('#knowledge .panel-header h3');
   const newKnowledgeButton = document.getElementById('newKnowledgeButton');
+  const dashboardLabel = dashboardButton.querySelector('span');
+  const ticketsLabel = ticketsButton.querySelector('span');
+  const knowledgeLabel = knowledgeButton.querySelector('span');
 
   if (isClientUser()) {
     dashboardButton.hidden = true;
-    ticketsButton.textContent = 'Mis tickets';
-    knowledgeButton.textContent = 'Conocimiento';
+    ticketsLabel.textContent = 'Mis tickets';
+    knowledgeLabel.textContent = 'Soluciones';
     dashboardHeader.textContent = 'Resumen de mis incidencias';
     ticketsHeader.textContent = 'Mis tickets';
-    knowledgeHeader.textContent = 'Base de conocimiento';
+    knowledgeHeader.textContent = 'Guías y soluciones';
     newKnowledgeButton.hidden = true;
     document.querySelectorAll('.nav-item').forEach((item) => item.classList.remove('active'));
     ticketsButton.classList.add('active');
     document.querySelectorAll('.view').forEach((view) => view.classList.remove('active'));
     document.getElementById('tickets').classList.add('active');
     document.getElementById('pageTitle').textContent = 'Mis tickets';
+    document.getElementById('pageDescription').textContent = 'Gestiona y da seguimiento a tus solicitudes de soporte.';
   } else {
     dashboardButton.hidden = false;
-    dashboardButton.textContent = 'Dashboard';
-    ticketsButton.textContent = 'Tickets';
-    knowledgeButton.textContent = 'Conocimiento';
+    dashboardLabel.textContent = 'Dashboard';
+    ticketsLabel.textContent = 'Tickets';
+    knowledgeLabel.textContent = 'Soluciones';
     dashboardHeader.textContent = 'Resumen de incidencias';
     ticketsHeader.textContent = 'Listado de tickets';
-    knowledgeHeader.textContent = 'Base de conocimiento';
+    knowledgeHeader.textContent = 'Guías y soluciones';
     newKnowledgeButton.hidden = false;
     document.querySelectorAll('.nav-item').forEach((item) => item.classList.remove('active'));
     dashboardButton.classList.add('active');
@@ -84,7 +88,7 @@ async function loadTickets() {
 }
 
 function updateUserBadge() {
-  const badge = document.getElementById('userBadge');
+  const badge = document.getElementById('userBadgeText');
   const roleLabel = isClientUser() ? 'Cliente' : state.currentUser.role;
   badge.textContent = `${state.currentUser.full_name} • ${roleLabel}`;
 }
@@ -142,7 +146,27 @@ async function loadKnowledge() {
 
 function renderKnowledge() {
   const articles = state.knowledge || [];
-  const cards = articles.map((article) => {
+  const search = document.getElementById('knowledgeSearch').value.trim().toLocaleLowerCase();
+  const categoryFilter = document.getElementById('knowledgeCategory');
+  const selectedCategory = categoryFilter.value;
+  const categories = [...new Set(articles.map((article) => article.category || 'General'))]
+    .sort((left, right) => left.localeCompare(right, 'es'));
+  categoryFilter.innerHTML = '<option value="">Todas las categorías</option>' +
+    categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('');
+  categoryFilter.value = categories.includes(selectedCategory) ? selectedCategory : '';
+
+  const normalize = (value) => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
+  const visibleArticles = articles.filter((article) => {
+    const articleCategory = article.category || 'General';
+    const searchText = [article.title, article.summary, article.steps, article.tags, articleCategory].join(' ');
+    return (!categoryFilter.value || articleCategory === categoryFilter.value) &&
+      (!search || normalize(searchText).includes(normalize(search)));
+  });
+
+  document.getElementById('knowledgeCount').textContent =
+    `${visibleArticles.length} ${visibleArticles.length === 1 ? 'guía' : 'guías'}`;
+
+  const cards = visibleArticles.map((article) => {
     const steps = (article.steps || '')
       .split('\n')
       .filter((step) => step.trim())
@@ -156,34 +180,42 @@ function renderKnowledge() {
     return `
       <article class="knowledge-card">
         <div class="knowledge-meta">
-          <span class="badge knowledge-category">${escapeHtml(article.category || 'General')}</span>
-          <span class="knowledge-date">${new Date(article.created_at).toLocaleDateString('es-DO')}</span>
+          <span class="knowledge-category">${escapeHtml(article.category || 'General')}</span>
+          <span class="knowledge-date">Actualizada ${new Date(article.updated_at || article.created_at).toLocaleDateString('es-DO')}</span>
         </div>
         <h4>${escapeHtml(article.title)}</h4>
-        <p>${escapeHtml(article.summary)}</p>
+        <div class="knowledge-summary">
+          <strong>Problema que resuelve</strong>
+          <p>${escapeHtml(article.summary)}</p>
+        </div>
         <div class="knowledge-steps">
-          <strong>Pasos</strong>
+          <strong>Cómo resolverlo</strong>
           <ol>${steps || '<li>Sin pasos registrados.</li>'}</ol>
         </div>
         ${tags ? `<div class="knowledge-tags">${tags}</div>` : ''}
-        <small>Publicado por ${escapeHtml(article.created_by || 'Admin')}</small>
+        <small class="knowledge-author">Preparada por ${escapeHtml(article.created_by || 'Admin')}</small>
       </article>
     `;
   }).join('');
 
-  document.getElementById('knowledgeGrid').innerHTML = cards || '<div class="empty-state">Sin soluciones publicadas todavía.</div>';
+  const emptyMessage = articles.length
+    ? 'No hay guías que coincidan. Prueba otra búsqueda o categoría.'
+    : 'Aún no hay guías publicadas. Aquí aparecerán las soluciones para los problemas frecuentes.';
+  document.getElementById('knowledgeGrid').innerHTML = cards || `<div class="empty-state">${emptyMessage}</div>`;
 }
 
 function renderDashboard() {
   const total = state.tickets.length;
   const open = state.tickets.filter((t) => ['Nuevo', 'Asignado', 'En progreso', 'Esperando usuario'].includes(t.status)).length;
   const resolved = state.tickets.filter((t) => ['Resuelto', 'Cerrado'].includes(t.status)).length;
-  const urgent = state.tickets.filter((t) => t.priority === 'Urgente').length;
+  const highPriority = state.tickets.filter((ticket) => ticket.priority === 'Alta').length;
+  const ticketCount = document.getElementById('ticketCount');
+  if (ticketCount) ticketCount.textContent = `Total: ${total} ${total === 1 ? 'ticket' : 'tickets'}`;
 
   document.getElementById('statTotal').textContent = total;
   document.getElementById('statOpen').textContent = open;
   document.getElementById('statResolved').textContent = resolved;
-  document.getElementById('statUrgent').textContent = urgent;
+  document.getElementById('statHigh').textContent = highPriority;
 
   const rows = state.tickets.slice(0, 5).map((ticket) => `
     <tr>
@@ -277,7 +309,6 @@ function openNewTicketModal() {
             <option>Baja</option>
             <option selected>Media</option>
             <option>Alta</option>
-            <option>Urgente</option>
           </select>
         </label>
         <label>
@@ -310,6 +341,7 @@ async function openTicket(ticketId) {
   state.currentTicketId = Number(ticketId);
 
   const modal = document.getElementById('ticketModal');
+  document.getElementById('modalTitle').textContent = 'Detalle del ticket';
   toggleModal(true, 'detail');
 
   const user = state.users.find((entry) => entry.id === Number(state.selectedUserId));
@@ -337,7 +369,6 @@ async function openTicket(ticketId) {
             <option ${ticket.priority === 'Baja' ? 'selected' : ''}>Baja</option>
             <option ${ticket.priority === 'Media' ? 'selected' : ''}>Media</option>
             <option ${ticket.priority === 'Alta' ? 'selected' : ''}>Alta</option>
-            <option ${ticket.priority === 'Urgente' ? 'selected' : ''}>Urgente</option>
           </select>
         </label>
         <label>
@@ -451,6 +482,8 @@ document.getElementById('closeModal').addEventListener('click', closeModal);
 document.getElementById('closeKnowledgeModal').addEventListener('click', closeKnowledgeModal);
 document.getElementById('newTicketButton').addEventListener('click', openNewTicketModal);
 document.getElementById('newKnowledgeButton').addEventListener('click', openKnowledgeModal);
+document.getElementById('knowledgeSearch').addEventListener('input', renderKnowledge);
+document.getElementById('knowledgeCategory').addEventListener('change', renderKnowledge);
 
 const ticketModal = document.getElementById('ticketModal');
 ticketModal.addEventListener('submit', async (event) => {
@@ -554,7 +587,14 @@ document.querySelectorAll('.nav-item').forEach((button) => {
     document.querySelectorAll('.view').forEach((view) => view.classList.remove('active'));
     const target = document.getElementById(button.dataset.section);
     target.classList.add('active');
-    document.getElementById('pageTitle').textContent = button.textContent.trim();
+    const section = button.dataset.section;
+    const pageCopy = {
+      dashboard: ['Dashboard', 'Resumen y actividad reciente del soporte técnico.'],
+      tickets: [isClientUser() ? 'Mis tickets' : 'Tickets', 'Gestiona y da seguimiento a los tickets de soporte.'],
+      knowledge: ['Centro de soluciones', 'Guías prácticas para resolver problemas frecuentes.'],
+    };
+    document.getElementById('pageTitle').textContent = pageCopy[section][0];
+    document.getElementById('pageDescription').textContent = pageCopy[section][1];
   });
 });
 

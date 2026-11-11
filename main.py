@@ -4,7 +4,7 @@ import os
 import secrets
 import time
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
@@ -134,7 +134,7 @@ def seed_data() -> None:
                     description="El usuario reporta que no puede entrar al sistema de producción y aparece un error de credenciales.",
                     category="Software",
                     channel="Llamada",
-                    priority="Urgente",
+                    priority="Alta",
                     status="En progreso",
                     requested_by_id=user_map["user2"].id,
                     assigned_to_id=user_map["tec2"].id,
@@ -193,6 +193,12 @@ def seed_data() -> None:
 
             db.commit()
 
+        db.query(Ticket).filter(Ticket.priority == "Urgente").update(
+            {Ticket.priority: "Alta"},
+            synchronize_session=False,
+        )
+        db.commit()
+
         if db.query(KnowledgeArticle).count() == 0:
             admin_user = user_map.get("admin")
             if admin_user:
@@ -218,12 +224,12 @@ class TicketCreate(BaseModel):
     description: str = Field(..., min_length=10)
     category: str
     channel: str = "WhatsApp"
-    priority: str = "Media"
+    priority: Literal["Baja", "Media", "Alta"] = "Media"
 
 
 class TicketUpdate(BaseModel):
     status: Optional[str] = None
-    priority: Optional[str] = None
+    priority: Optional[Literal["Baja", "Media", "Alta"]] = None
     assigned_to_id: Optional[int] = None
     solution: Optional[str] = None
     closure_note: Optional[str] = None

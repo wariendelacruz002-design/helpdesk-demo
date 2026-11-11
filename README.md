@@ -56,6 +56,13 @@ python main.py
 http://127.0.0.1:8000/
 ```
 
+## Interfaz y prioridades
+
+- Panel adaptable a escritorio y móvil, con navegación lateral e indicadores de tickets.
+- Modales con desplazamiento interno para consultar y actualizar tickets.
+- Centro de soluciones con búsqueda por texto y filtro por categoría.
+- Prioridades disponibles: Baja, Media y Alta. Al iniciar, los tickets con la antigua prioridad Urgente pasan a Alta.
+
 ## Alcance académico
 
 Este demo cumple con el propósito de una presentación universitaria: permite mostrar el flujo del sistema, la lógica funcional y la propuesta de interfaz de una plataforma de mesa de ayuda, sin requerir una infraestructura compleja de producción.
