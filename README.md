@@ -1,4 +1,4 @@
-# Demo de tesis: Help Desk para Acabados Automotrices
+# Demo: Help Desk para Acabados Automotrices
 
 ## Análisis del documento base
 
